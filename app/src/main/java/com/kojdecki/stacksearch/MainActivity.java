@@ -1,23 +1,25 @@
 package com.kojdecki.stacksearch;
 
 import android.app.Activity;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.SearchView;
 
+import com.kojdecki.stacksearch.retrofit.Question;
+import com.kojdecki.stacksearch.retrofit.Search;
+import com.kojdecki.stacksearch.retrofit.StackOverflowAPI;
 
-public class MainActivity extends Activity implements DetailsFragment.OnFragmentInteractionListener {
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+
+public class MainActivity extends Activity implements Callback<Search>, DetailsFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "MainActivity:";
     private String mLastQuery = null;
@@ -32,7 +34,8 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //TODO
+                mLastQuery = query;
+                searchStackOverflow(1);
                 return true;
             }
 
@@ -43,9 +46,34 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
         });
     }
 
+    private void searchStackOverflow(int page) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.stackexchange.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        StackOverflowAPI stackOverflowAPI = retrofit.create(StackOverflowAPI.class);
+        Call<Search> call = stackOverflowAPI.loadSearch(mLastQuery.replace(" ", "%20"), page);
+        call.enqueue(this);
+
+        return;
+    }
+
     @Override
     public void onFragmentInteraction(Uri uri) {
         //TODO implement this
+    }
+
+    @Override
+    public void onResponse(Call<Search> call, Response<Search> response) {
+        //ArrayList<Question> list = new ArrayList<Question>();
+        //list.addAll(response.body().getItems());
+        Log.d(TAG + ":onRespon", response.body().toString());
+    }
+
+    @Override
+    public void onFailure(Call<Search> call, Throwable t) {
+
     }
 
 //    @Override
