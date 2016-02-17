@@ -3,31 +3,33 @@
     android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/background"
-    tools:context=".MainActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity">
 
     <SearchView
         android:id="@+id/search_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/search_box_padding"
-        android:focusable="true"
-        android:queryHint="@string/search_fragment"
+        android:background="@color/white"
+        android:iconifiedByDefault="false"
+
         android:imeOptions="actionSearch"
-        android:textStyle="bold"
-        android:background="@color/white"/>
+        android:padding="@dimen/search_box_padding"
+        android:queryHint="@string/search_fragment"
+        android:textStyle="bold" />
 
     <ListView
         android:id="@+id/results_list"
-        android:layout_marginTop="@dimen/activity_horizontal_margin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"
         android:background="@color/white"
-        android:divider="@color/background"/>
+        android:divider="@color/background"
+        android:dividerHeight="2dp" />
 
     <FrameLayout
         android:id="@+id/fragment_container"
