@@ -2,11 +2,9 @@ package com.kojdecki.stacksearch;
 
 import android.app.Activity;
 import android.app.Fragment;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +50,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
     private QuestionListAdapter mQuestionListAdapter = null;
     private ArrayList<Question> mQuestionList = null;
 
-    private OnFragmentInteractionListener mListener;
+    private OnItemSelecetedListener mListener;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -111,7 +109,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //TODO communicate with Activity
+                mListener.onItemSelected(mQuestionListAdapter.getItem(position).getLink());
             }
         });
 
@@ -180,6 +178,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         listView.removeFooterView(footerView);
     }
 
+
     @Override
     public void onFailure(Call<Search> call, Throwable t) {
         mCallRunning = false;
@@ -203,7 +202,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         outState.putString("mLastQuery", mLastQuery);
         outState.putShort("mPageNumber", mPageNumber);
         outState.putSerializable("AdapterItems",
-                mQuestionListAdapter.getItems());
+                mQuestionList);
     }
 
     @Override
@@ -221,18 +220,11 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         return inflater.inflate(R.layout.fragment_search, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Activity context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnItemSelecetedListener) {
+            mListener = (OnItemSelecetedListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -255,8 +247,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    public interface OnItemSelecetedListener {
+        void onItemSelected(String link);
     }
 }

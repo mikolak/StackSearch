@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +24,8 @@ import android.webkit.WebView;
 public class DetailsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_LINK = "param1";
+    private static final String ARG_LINK = "link";
+    private static final String WEB_VIEW_KEY = "WebViewState";
 
     // TODO: Rename and change types of parameters
     private String mLink;
@@ -63,7 +65,21 @@ public class DetailsFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         WebView webView = (WebView) getActivity().findViewById(R.id.web_view);
-        webView.loadUrl(mLink);
+        if (savedInstanceState == null) {
+            webView.loadUrl(mLink);
+        } else {
+            Bundle savedState = savedInstanceState.getBundle(WEB_VIEW_KEY);
+            webView.restoreState(savedState);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        WebView webView = (WebView) getActivity().findViewById(R.id.web_view);
+        Bundle webViewState = new Bundle();
+        webView.saveState(webViewState);
+        outState.putBundle(WEB_VIEW_KEY, webViewState);
     }
 
     @Override
