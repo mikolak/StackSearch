@@ -10,11 +10,13 @@ public class Question implements Parcelable {
     private int answer_count;
     private ShallowUser owner;
     private String title;
+    private String link;
 
-    public Question(int answer_count, ShallowUser owner, String title) {
+    public Question(int answer_count, ShallowUser owner, String title, String link) {
         this.answer_count = answer_count;
         this.owner = owner;
         this.title = title;
+        this.link = link;
     }
     public String toString() {
         return new StringBuilder().append("AnswerCount: ")
@@ -22,7 +24,9 @@ public class Question implements Parcelable {
                 .append(" Title: ")
                 .append(title)
                 .append(" Owner: ")
-                .append(owner.toString()).toString();
+                .append(owner.toString())
+                .append(" Link: ")
+                .append(link).toString();
     }
 
     public String getTitle() {
@@ -37,6 +41,10 @@ public class Question implements Parcelable {
         return answer_count;
     }
 
+    public String getLink() {
+        return link;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -47,6 +55,7 @@ public class Question implements Parcelable {
         dest.writeInt(answer_count);
         dest.writeParcelable(owner, flags);
         dest.writeString(title);
+        dest.writeString(link);
     }
 
     public static final Parcelable.Creator<Question> CREATOR =
@@ -65,6 +74,7 @@ public class Question implements Parcelable {
         answer_count = in.readInt();
         owner = (ShallowUser) in.readParcelable(null);
         title = in.readString();
+        link = in.readString();
     }
 
 }
