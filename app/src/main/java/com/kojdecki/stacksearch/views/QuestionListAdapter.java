@@ -95,6 +95,8 @@ public class QuestionListAdapter extends BaseAdapter {
                 return "circle()";
             }
         }
+        //Custom view extending ImageView just to override onDraw and set alpha on the bitmap outside the
+        //circle seems to be an overkill to me
         if (getItem(position).getOwner().getProfile_image() != null)
             Picasso.with(context)
                 .load(getItem(position).getOwner().getProfile_image())
