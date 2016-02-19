@@ -10,4 +10,7 @@
     <string name="exit_question">Are you sure you wish to exit?</string>
     <string name="exit">Exit</string>
     <string name="cancel">Cancel</string>
+
+    <string name="welcome">Hello world!</string>
+    <string name="hide">hide</string>
 </resources>

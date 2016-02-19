@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.kojdecki.stacksearch.views.Snackbar;
+
 
 public class MainActivity extends Activity implements DetailsFragment.OnFragmentInteractionListener,
         SearchFragment.OnItemSelecetedListener {
@@ -44,14 +46,24 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Snackbar.make(this, getResources().getString(R.string.welcome),
+                getResources().getString(R.string.hide), Snackbar.LENGTH_SHORT, null)
+                .show();
+//        Snackbar.make(this, getResources().getString(R.string.welcome),
+//                getResources().getString(R.string.hide), Snackbar.LENGTH_SHORT, null)
+//                .show();
+    }
+
+    @Override
     public void onFragmentInteraction(Uri uri) {
-        //TODO implement this
+        //not needed
     }
 
     @Override
     public void onBackPressed() {
         if (mDetailsFragment == null || !mDetailsFragment.isVisible()) {
-            //TODO exit dialog
             ExitDialogFragment exitDialogFragment = new ExitDialogFragment();
             exitDialogFragment.show(getFragmentManager(), EXIT_DIALOG_KEY);
         }
