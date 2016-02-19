@@ -68,39 +68,38 @@ public class QuestionListAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        class CropCircleTransformation implements Transformation {
+//        class CropCircleTransformation implements Transformation {
+//
+//            @Override
+//            public Bitmap transform(Bitmap source) {
+//                int diameter = Math.min(source.getWidth(), source.getHeight());
+//                int x_c = source.getWidth()/2;
+//                int y_c = source.getHeight()/2;
+//                int x = (source.getWidth() - diameter)/2;
+//                int y = (source.getHeight() - diameter)/2;
+//                Bitmap cropped = Bitmap.createBitmap(source, x, y, diameter, diameter);
+//                Bitmap result = cropped.copy(cropped.getConfig(), true);
+//                cropped.recycle();
+//                source.recycle();
+//                result.setHasAlpha(true);
+//                for (x = 0; x < diameter; x++)
+//                    for (y = 0; y < diameter; y++) {
+//                        if ((x - x_c) * (x - x_c) + (y - y_c) * (y - y_c) > (diameter/2) * (diameter/2))
+//                            result.setPixel(x, y, Color.parseColor("#00000000"));
+//                    }
+//                return result;
+//            }
+//
+//            @Override
+//            public String key() {
+//                return "circle()";
+//            }
+//        }
 
-            @Override
-            public Bitmap transform(Bitmap source) {
-                int diameter = Math.min(source.getWidth(), source.getHeight());
-                int x_c = source.getWidth()/2;
-                int y_c = source.getHeight()/2;
-                int x = (source.getWidth() - diameter)/2;
-                int y = (source.getHeight() - diameter)/2;
-                Bitmap cropped = Bitmap.createBitmap(source, x, y, diameter, diameter);
-                Bitmap result = cropped.copy(cropped.getConfig(), true);
-                cropped.recycle();
-                source.recycle();
-                result.setHasAlpha(true);
-                for (x = 0; x < diameter; x++)
-                    for (y = 0; y < diameter; y++) {
-                        if ((x - x_c) * (x - x_c) + (y - y_c) * (y - y_c) > (diameter/2) * (diameter/2))
-                            result.setPixel(x, y, Color.parseColor("#00000000"));
-                    }
-                return result;
-            }
-
-            @Override
-            public String key() {
-                return "circle()";
-            }
-        }
-        //Custom view extending ImageView just to override onDraw and set alpha on the bitmap outside the
-        //circle seems to be an overkill to me
         if (getItem(position).getOwner().getProfile_image() != null)
             Picasso.with(context)
                 .load(getItem(position).getOwner().getProfile_image())
-                .transform(new CropCircleTransformation())
+                //.transform(new CropCircleTransformation())
                 .resize(128, 128)
                 .into(viewHolder.image);
         viewHolder.title.setText(getItem(position).getTitle());
