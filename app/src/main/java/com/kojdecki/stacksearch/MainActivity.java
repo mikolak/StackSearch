@@ -57,6 +57,12 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Snackbar.cancel();
+    }
+
+    @Override
     public void onFragmentInteraction(Uri uri) {
         //not needed
     }

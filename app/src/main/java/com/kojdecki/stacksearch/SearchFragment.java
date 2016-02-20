@@ -33,14 +33,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class SearchFragment extends Fragment implements Callback<Search> {
-//    // TO DO: Rename parameter arguments, choose names that match
-//    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-//    private static final String ARG_PARAM1 = "param1";
-//    private static final String ARG_PARAM2 = "param2";
-//
-//    // TO DO: Rename and change types of parameters
-//    private String mParam1;
-//    private String mParam2;
+    private final static String CALL_RUNNING_KEY = "mCallRunning";
+    private final static String LAST_QUERY_KEY = "mLastQuery";
+    private final static String PAGE_NUMBER_KEY = "mPageNumber";
+    private final static String QUESTION_LIST_KEY = "mQuestionList";
 
     private String mLastQuery = null;
     private Call<Search> mCall = null;
@@ -49,35 +45,25 @@ public class SearchFragment extends Fragment implements Callback<Search> {
     private View footerView = null;
     private QuestionListAdapter mQuestionListAdapter = null;
     private ArrayList<Question> mQuestionList = null;
-
     private OnItemSelecetedListener mListener;
 
     public SearchFragment() {
         // Required empty public constructor
     }
 
-    // TO DO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(/*String param1, String param2*/) {
-        SearchFragment fragment = new SearchFragment();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-        return fragment;
+    public static SearchFragment newInstance() {
+        return new SearchFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
+
         if (savedInstanceState != null) {
-            mCallRunning = savedInstanceState.getBoolean("mCallRunning", false);
-            mLastQuery = savedInstanceState.getString("mLastQuery", null);
-            mPageNumber = savedInstanceState.getShort("mPageNumber", (short) 1);
-            mQuestionList = (ArrayList<Question>) savedInstanceState.getSerializable("AdapterItems");
+            mCallRunning = savedInstanceState.getBoolean(CALL_RUNNING_KEY, false);
+            mLastQuery = savedInstanceState.getString(LAST_QUERY_KEY, null);
+            mPageNumber = savedInstanceState.getShort(PAGE_NUMBER_KEY, (short) 1);
+            mQuestionList = (ArrayList<Question>) savedInstanceState.getSerializable(QUESTION_LIST_KEY);
         } else {
             mQuestionList = new ArrayList<Question>();
         }
@@ -127,7 +113,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
                 if (isNetworkConnected()) {
                     searchStackOverflow(mPageNumber);
                 } else {
-                    Toast.makeText(getActivity(), "No network connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }
@@ -169,7 +155,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         ListView listView = (ListView) getActivity().findViewById(R.id.results_list);
         mQuestionListAdapter.addAll(response.body().getItems());
         if (mQuestionListAdapter.getCount() == 0) {
-            mQuestionListAdapter.add(new Question(-1, new ShallowUser(null, null), "No hits for this search!", ""));
+            mQuestionListAdapter.add(new Question(-1, new ShallowUser(null, null), getResources().getString(R.string.no_hits), ""));
             mPageNumber = 1;
         } else {
             mPageNumber += 1;
@@ -182,7 +168,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
     @Override
     public void onFailure(Call<Search> call, Throwable t) {
         mCallRunning = false;
-        Toast.makeText(getActivity(), "Application failed to fetch results", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), R.string.failed_to_fetch, Toast.LENGTH_SHORT).show();
         ListView listView = (ListView) getActivity().findViewById(R.id.results_list);
         listView.removeFooterView(footerView);
     }
@@ -198,10 +184,10 @@ public class SearchFragment extends Fragment implements Callback<Search> {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("mCallRunning", mCallRunning);
-        outState.putString("mLastQuery", mLastQuery);
-        outState.putShort("mPageNumber", mPageNumber);
-        outState.putSerializable("AdapterItems",
+        outState.putBoolean(CALL_RUNNING_KEY, mCallRunning);
+        outState.putString(LAST_QUERY_KEY, mLastQuery);
+        outState.putShort(PAGE_NUMBER_KEY, mPageNumber);
+        outState.putSerializable(QUESTION_LIST_KEY,
                 mQuestionList);
     }
 
@@ -216,7 +202,6 @@ public class SearchFragment extends Fragment implements Callback<Search> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_search, container, false);
     }
 
@@ -237,16 +222,7 @@ public class SearchFragment extends Fragment implements Callback<Search> {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    //interface necessary for parent activity
     public interface OnItemSelecetedListener {
         void onItemSelected(String link);
     }

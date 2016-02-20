@@ -13,4 +13,7 @@
 
     <string name="welcome">Hello world!</string>
     <string name="hide">hide</string>
+    <string name="failed_to_fetch">Application failed to fetch results</string>
+    <string name="no_hits">No hits for this search!</string>
+    <string name="no_network">No network connection</string>
 </resources>

@@ -25,6 +25,7 @@ public class Snackbar extends FrameLayout {
     private static Stack<Snackbar> sQueue = new Stack<Snackbar>();
     private static Context sContext = null;
     private static boolean sShowing = false;
+    private static Snackbar sActive = null;
 
     static class SnackbarParams {
         String mMessage;
@@ -49,7 +50,7 @@ public class Snackbar extends FrameLayout {
         super(context);
         mParams = params;
         // FIXME: 2/20/16 (gestures not working)
-        mDetector = new GestureDetector(getContext(), new mListener());
+        mDetector = new GestureDetector(getContext(), new MyOnGestureListener());
         mContent = inflate(context, R.layout.snackbar, null);
         addView(mContent);
 
@@ -66,6 +67,13 @@ public class Snackbar extends FrameLayout {
         if (mParams.mListener != null) {
             button.setOnClickListener(mParams.mListener);
         }
+
+        //setOnTouchListener(mDetector);
+    }
+
+    public static void cancel() {
+        if (sActive != null)
+            sActive.remove();
     }
 
     private void hide() {
@@ -84,13 +92,21 @@ public class Snackbar extends FrameLayout {
         return snackbar;
     }
 
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        //TODO implementation
+        mDetector.onTouchEvent(ev);
+        return false;
+        //return super.onInterceptTouchEvent(ev);
+    }
+
     public void show() {
         synchronized (Snackbar.class) {
             if (sShowing) {
                 sQueue.add(this);
             } else {
                 sShowing = true;
-                //TODO display
+                sActive = this;
 
                 WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                 WindowManager.LayoutParams params = new WindowManager.LayoutParams();
@@ -102,9 +118,11 @@ public class Snackbar extends FrameLayout {
                 params.format = PixelFormat.OPAQUE;
                 params.type = WindowManager.LayoutParams.TYPE_TOAST;
                 params.setTitle("Snackbar");
-                params.flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
-                        //| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+                params.flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
                 wm.addView(this, params);
+
+                //TODO display animation
             }
         }
     }
@@ -112,6 +130,7 @@ public class Snackbar extends FrameLayout {
     private void remove() {
         synchronized (Snackbar.class) {
             sShowing = false;
+            sActive = null;
             WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
             wm.removeView(this);
         }
@@ -119,7 +138,6 @@ public class Snackbar extends FrameLayout {
         if (sQueue.size() != 0) {
             sQueue.pop().show();
         }
-        //TODO remove view
     }
 
     private void dismissRight() {
@@ -132,7 +150,13 @@ public class Snackbar extends FrameLayout {
         remove();
     }
 
-    class mListener extends GestureDetector.SimpleOnGestureListener {
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mDetector.onTouchEvent(event);
+        //return super.onTouchEvent(event);
+    }
+
+    class MyOnGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
             return true;

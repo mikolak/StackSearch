@@ -2,48 +2,32 @@ package com.kojdecki.stacksearch.views;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 /**
  * Created by calot on 2/19/16.
  */
 public class CircleImageView extends ImageView {
-//    private Paint mAlphaPaint = null;
 
     public CircleImageView(Context context) {
         super(context);
-//        init();
     }
 
     public CircleImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-//        init();
     }
 
     public CircleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-//        init();
     }
 
     public CircleImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-//        init();
     }
-
-    /*private void init() {
-        mAlphaPaint = new Paint();
-        mAlphaPaint.setARGB(0, 0, 0, 0);
-        mAlphaPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.MULTIPLY));
-    }*/
 
     @Override
     public void setImageDrawable(Drawable drawable) {
