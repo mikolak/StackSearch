@@ -1,14 +1,15 @@
 package com.kojdecki.stacksearch.views;
 
+import android.app.Activity;
 import android.content.Context;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kojdecki.stacksearch.R;
@@ -44,16 +45,26 @@ public class Snackbar extends FrameLayout {
     private GestureDetector mDetector = null;
     private SnackbarParams mParams = null;
     private View mContent = null;
+    private Activity mActivity = null;
     //TODO timer
 
-    private Snackbar(Context context, SnackbarParams params) {
+    private Snackbar(Activity context, SnackbarParams params) {
         super(context);
         mParams = params;
-        // FIXME: 2/20/16 (gestures not working)
+        mActivity = context;
         mDetector = new GestureDetector(getContext(), new MyOnGestureListener());
         mContent = inflate(context, R.layout.snackbar, null);
         addView(mContent);
+//        RelativeLayout.LayoutParams layoutParams
+//                = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+//                RelativeLayout.LayoutParams.WRAP_CONTENT);
+//        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+//
+//        setLayoutParams(layoutParams);
+        setViewContent();
+    }
 
+    private void setViewContent() {
         ((TextView) findViewById(R.id.snackbar_text)).setText(mParams.mMessage);
         TextView button = (TextView) findViewById(R.id.snackbar_button);
         button.setText(mParams.mAction.toUpperCase());
@@ -67,13 +78,17 @@ public class Snackbar extends FrameLayout {
         if (mParams.mListener != null) {
             button.setOnClickListener(mParams.mListener);
         }
-
-        //setOnTouchListener(mDetector);
     }
 
+    /**
+     * Should only be called when Activity is deactivated (e.g. in onPause()).
+     * Removes Snackbar and clears queue.
+     */
     public static void cancel() {
-        if (sActive != null)
+        if (sActive != null) {
             sActive.remove();
+            sQueue.clear();
+        }
     }
 
     private void hide() {
@@ -81,7 +96,7 @@ public class Snackbar extends FrameLayout {
         remove();
     }
 
-    public static Snackbar make(Context context, String message, String action, int duration, OnClickListener listener) {
+    public static Snackbar make(Activity context, String message, String action, int duration, OnClickListener listener) {
         if (!context.equals(sContext)) {
             sQueue.clear();
             sContext = context;
@@ -108,7 +123,17 @@ public class Snackbar extends FrameLayout {
                 sShowing = true;
                 sActive = this;
 
-                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+                ViewGroup viewGroup = (ViewGroup) ((ViewGroup) mActivity
+                        .findViewById(android.R.id.content)).getChildAt(0);
+
+                RelativeLayout.LayoutParams layoutParams
+                        = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                setLayoutParams(layoutParams);
+                viewGroup.addView(this, layoutParams);
+
+                /*WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                 WindowManager.LayoutParams params = new WindowManager.LayoutParams();
                 Point size = new Point();
                 wm.getDefaultDisplay().getSize(size);
@@ -121,7 +146,7 @@ public class Snackbar extends FrameLayout {
                 params.flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
                 wm.addView(this, params);
-
+*/
                 //TODO display animation
             }
         }
@@ -131,8 +156,12 @@ public class Snackbar extends FrameLayout {
         synchronized (Snackbar.class) {
             sShowing = false;
             sActive = null;
-            WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            wm.removeView(this);
+
+            ViewGroup viewGroup = (ViewGroup) ((ViewGroup) mActivity
+                    .findViewById(android.R.id.content)).getChildAt(0);
+            viewGroup.removeView(this);
+            /*WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            wm.removeView(this);*/
         }
 
         if (sQueue.size() != 0) {

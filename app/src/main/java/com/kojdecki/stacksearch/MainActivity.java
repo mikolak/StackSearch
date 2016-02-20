@@ -82,12 +82,14 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         getFragmentManager().putFragment(outState, SEARCH_FRAGMENT_KEY, mSearchFragment);
-        if (mDetailsFragment != null)
+        if (mDetailsFragment != null && mDetailsFragment.isVisible())
             getFragmentManager().putFragment(outState, DETAILS_FRAGMENT_KEY, mDetailsFragment);
     }
 
     @Override
     public void onItemSelected(String link) {
+        if (link == null || link.equals(""))
+            return;
         mDetailsFragment = DetailsFragment.newInstance(link);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, mDetailsFragment);
