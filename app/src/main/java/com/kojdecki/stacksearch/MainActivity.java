@@ -17,12 +17,15 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
 
     //private static final String TAG = "MainActivity:";
 
-    private String SEARCH_FRAGMENT_KEY = "mSearchFragment";
-    private String DETAILS_FRAGMENT_KEY = "mDetailsFragment";
-    private String EXIT_DIALOG_KEY = "exitDialog";
+    private final String SEARCH_FRAGMENT_KEY = "mSearchFragment";
+    private final String DETAILS_FRAGMENT_KEY = "mDetailsFragment";
+    private final String EXIT_DIALOG_KEY = "exitDialog";
+    private final String SNACKBARS_SHOWN_KEY = "mSnackbarsShown";
 
     private SearchFragment mSearchFragment = null;
     private DetailsFragment mDetailsFragment = null;
+
+    private boolean mSnackbarsShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,8 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
                     .getFragment(savedInstanceState, SEARCH_FRAGMENT_KEY);
             mDetailsFragment = (DetailsFragment) getFragmentManager()
                     .getFragment(savedInstanceState, DETAILS_FRAGMENT_KEY);
+
+            mSnackbarsShown = savedInstanceState.getBoolean(SNACKBARS_SHOWN_KEY, false);
         }
 
         if (mSearchFragment == null) {
@@ -48,12 +53,18 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
     @Override
     protected void onResume() {
         super.onResume();
-        Snackbar.make(this, getResources().getString(R.string.welcome),
-                getResources().getString(R.string.hide), Snackbar.LENGTH_SHORT, null)
-                .show();
-//        Snackbar.make(this, getResources().getString(R.string.welcome),
-//                getResources().getString(R.string.hide), Snackbar.LENGTH_SHORT, null)
-//                .show();
+        if (!mSnackbarsShown) {
+            Snackbar.make(this, getResources().getString(R.string.welcome),
+                    getResources().getString(R.string.hide), Snackbar.LENGTH_SHORT, null)
+                    .show();
+            Snackbar.make(this, getResources().getString(R.string.welcome),
+                    getResources().getString(R.string.hide), Snackbar.LENGTH_LONG, null)
+                    .show();
+            Snackbar.make(this, getResources().getString(R.string.welcome),
+                    getResources().getString(R.string.hide), Snackbar.LENGTH_INDEFINITE, null)
+                    .show();
+            mSnackbarsShown = true;
+        }
     }
 
     @Override
@@ -84,6 +95,8 @@ public class MainActivity extends Activity implements DetailsFragment.OnFragment
         getFragmentManager().putFragment(outState, SEARCH_FRAGMENT_KEY, mSearchFragment);
         if (mDetailsFragment != null && mDetailsFragment.isVisible())
             getFragmentManager().putFragment(outState, DETAILS_FRAGMENT_KEY, mDetailsFragment);
+
+        outState.putBoolean(SNACKBARS_SHOWN_KEY, mSnackbarsShown);
     }
 
     @Override

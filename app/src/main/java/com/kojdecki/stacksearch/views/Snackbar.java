@@ -1,13 +1,16 @@
 package com.kojdecki.stacksearch.views;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -17,13 +20,19 @@ import com.kojdecki.stacksearch.R;
 import java.util.Stack;
 
 /**
- * Created by calot on 2/18/16.
+ * * Snackbar implementation not using android.design. Requires calling activity to have Relative
+ * Layout as the root view.
+ *
+ * Created by Mikołaj Kojdecki, 21/02/2016
  */
+//should only be instantiated by calling Snackbar.make()
+@SuppressLint("ViewConstructor")
 public class Snackbar extends FrameLayout {
-    public static int LENGTH_SHORT = 2000;
-    public static int LENGTH_LONG = 4000;
+    public final static int LENGTH_SHORT = 2000;
+    public final static int LENGTH_LONG = 4000;
+    public final static int LENGTH_INDEFINITE = -1;
 
-    private static Stack<Snackbar> sQueue = new Stack<Snackbar>();
+    private static Stack<Snackbar> sQueue = new Stack<>();
     private static Context sContext = null;
     private static boolean sShowing = false;
     private static Snackbar sActive = null;
@@ -44,27 +53,55 @@ public class Snackbar extends FrameLayout {
 
     private GestureDetector mDetector = null;
     private SnackbarParams mParams = null;
-    private View mContent = null;
     private Activity mActivity = null;
-    //TODO timer
+    private Handler mHandler = null;
+    private Runnable mAction = null;
 
     private Snackbar(Activity context, SnackbarParams params) {
         super(context);
         mParams = params;
         mActivity = context;
+
         mDetector = new GestureDetector(getContext(), new MyOnGestureListener());
-        mContent = inflate(context, R.layout.snackbar, null);
-        addView(mContent);
-//        RelativeLayout.LayoutParams layoutParams
-//                = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-//                RelativeLayout.LayoutParams.WRAP_CONTENT);
-//        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-//
-//        setLayoutParams(layoutParams);
+        mHandler = new Handler();
+
+        RelativeLayout.LayoutParams layoutParams
+                = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        setLayoutParams(layoutParams);
+
         setViewContent();
     }
 
+    private void setTimer() {
+        if (mParams.mDuration != LENGTH_INDEFINITE) {
+            mAction = new Runnable() {
+                @Override
+                public void run() {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            hide();
+                        }
+                    });
+                }
+            };
+
+            mHandler.postDelayed(mAction, mParams.mDuration);
+        }
+    }
+
+    private void cancelTimer() {
+        if (mHandler != null && mAction != null) {
+            mHandler.removeCallbacks(mAction);
+        }
+    }
+
     private void setViewContent() {
+        View mContent = inflate(mActivity, R.layout.snackbar, null);
+        addView(mContent);
+
         ((TextView) findViewById(R.id.snackbar_text)).setText(mParams.mMessage);
         TextView button = (TextView) findViewById(R.id.snackbar_button);
         button.setText(mParams.mAction.toUpperCase());
@@ -92,8 +129,30 @@ public class Snackbar extends FrameLayout {
     }
 
     private void hide() {
-        //TODO animation
-        remove();
+        Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.snackbar_out);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                //not needed
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        remove();
+                    }
+                });
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        startAnimation(animation);
     }
 
     public static Snackbar make(Activity context, String message, String action, int duration, OnClickListener listener) {
@@ -102,17 +161,13 @@ public class Snackbar extends FrameLayout {
             sContext = context;
         }
 
-        Snackbar snackbar = new Snackbar(context, new SnackbarParams(message, action, duration, listener));
-
-        return snackbar;
+        return new Snackbar(context, new SnackbarParams(message, action, duration, listener));
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        //TODO implementation
         mDetector.onTouchEvent(ev);
         return false;
-        //return super.onInterceptTouchEvent(ev);
     }
 
     public void show() {
@@ -126,28 +181,25 @@ public class Snackbar extends FrameLayout {
                 ViewGroup viewGroup = (ViewGroup) ((ViewGroup) mActivity
                         .findViewById(android.R.id.content)).getChildAt(0);
 
-                RelativeLayout.LayoutParams layoutParams
-                        = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-                setLayoutParams(layoutParams);
-                viewGroup.addView(this, layoutParams);
+                viewGroup.addView(this, getLayoutParams());
+                Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.snackbar_in);
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
 
-                /*WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-                WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-                Point size = new Point();
-                wm.getDefaultDisplay().getSize(size);
-                params.y = size.y - getHeight();
-                params.width = WindowManager.LayoutParams.MATCH_PARENT;
-                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                params.format = PixelFormat.OPAQUE;
-                params.type = WindowManager.LayoutParams.TYPE_TOAST;
-                params.setTitle("Snackbar");
-                params.flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-                wm.addView(this, params);
-*/
-                //TODO display animation
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        setTimer();
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                startAnimation(animation);
             }
         }
     }
@@ -157,11 +209,11 @@ public class Snackbar extends FrameLayout {
             sShowing = false;
             sActive = null;
 
+            cancelTimer();
+
             ViewGroup viewGroup = (ViewGroup) ((ViewGroup) mActivity
                     .findViewById(android.R.id.content)).getChildAt(0);
             viewGroup.removeView(this);
-            /*WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            wm.removeView(this);*/
         }
 
         if (sQueue.size() != 0) {
@@ -170,13 +222,57 @@ public class Snackbar extends FrameLayout {
     }
 
     private void dismissRight() {
-        //TODO animation
-        remove();
+        Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.snackbar_out_right);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                //not needed
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        remove();
+                    }
+                });
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        startAnimation(animation);
     }
 
     private void dismissLeft() {
-        //TODO animation
-        remove();
+        Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.snackbar_out_left);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                //not needed
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        remove();
+                    }
+                });
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        startAnimation(animation);
     }
 
     @Override
