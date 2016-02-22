@@ -17,6 +17,8 @@ import android.widget.TextView;
 
 import com.kojdecki.stacksearch.R;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 
 /**
@@ -32,7 +34,7 @@ public class Snackbar extends FrameLayout {
     public final static int LENGTH_LONG = 4000;
     public final static int LENGTH_INDEFINITE = -1;
 
-    private static Stack<Snackbar> sQueue = new Stack<>();
+    private static LinkedList<Snackbar> sQueue = new LinkedList<>();
     private static Context sContext = null;
     private static boolean sShowing = false;
     private static Snackbar sActive = null;
@@ -123,8 +125,10 @@ public class Snackbar extends FrameLayout {
      */
     public static void cancel() {
         if (sActive != null) {
-            sActive.remove();
-            sQueue.clear();
+            synchronized (Snackbar.class) {
+                sQueue.clear();
+                sActive.remove();
+            }
         }
     }
 
